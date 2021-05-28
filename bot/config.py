@@ -1,1 +1,3 @@
-ATTENTION_THAT_WUMPUS_IS_NEAR = 'Чую запах, кажется вампус рядом'
+CLUSTER = 'mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false'
+
+TOKEN = '<ВАШ ТОКЕН>'
