@@ -6,12 +6,13 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import motor.motor_asyncio
 import traceback
 
+from bot import config
 from bot.session import Session
 
 """ Инициализирую работу с базой """
 
 # """ Ключ для работы с базой """
-cluster = 'mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false'
+cluster = config.CLUSTER
 client = motor.motor_asyncio.AsyncIOMotorClient(cluster)
 
 """ База с которой работаю """
@@ -21,7 +22,7 @@ db = client["test"]
 """ Таблица с которой работаю """
 wumpus = db.wumpus
 
-bot = Bot(token='1888915156:AAEg4tSgeOWiVTnxFfzy1-14RRr_8lrPUKM')
+bot = Bot(token=config.TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 """ ГЛАВНАЯ КЛАВИАТУРА (НИЗ)"""
@@ -32,7 +33,7 @@ def MainKeyboard() -> types.ReplyKeyboardMarkup:
     first = ('GitHub проекта 🏠',
              'Помощь❓')
     second = ('Wiki📃',
-              'Поделиться')
+              'Контакты')
     third = 'Начать игру 🏰'
     keyboard_markup.row(*(types.KeyboardButton(text) for text in first))
     keyboard_markup.row(*(types.KeyboardButton(text) for text in second))
@@ -57,7 +58,9 @@ def FinishKeyboard() -> types.ReplyKeyboardMarkup:
 
 HELLO_MESSAGE = '''Привет! Это игра в Охоту на Вампуса! Что будем делать? '''
 
-GIT_HUB_LINK = '''GIT_HUB_LINK '''
+GIT_HUB_LINK = '''[ ](https://github.com/VasiliySilver/Wumpus) Здесь расположен репозиторий проекта '''
+
+''' ОБРАБОТЧИК КОМАНДЫ СТАРТ '''
 
 HELP_TEXT = ''' 1 - В начале игры игрок случайным образом попадает в одну из комнат пещеры.
 2 - За ход он может выстрелить в одну из комнат либо перейти в какую-нибудь.
@@ -67,8 +70,11 @@ HELP_TEXT = ''' 1 - В начале игры игрок случайным об�
 УДАЧИ!
 '''
 
-WIKI_LINK = ''' [ ](https://ru.wikipedia.org/wiki/Hunt_the_Wumpus)Мир «Hunt the Wumpus» — это пещера из 20 пронумерованных комнат, каждая из которых соединена тоннелями с тремя другими, т. е. пещера представляет собой расплющенный додекаэдр (в последующих версиях используются топологии, основанные на икосаэдре, листе Мёбиуса, пчелиных сотах и др.)[2]. В начале игры персонаж случайным образом оказывается в одной из комнат пещеры. За ход он может либо выстрелить в одну из трёх соседних комнат, либо перейти в какую-нибудь из них.
-'''
+WIKI_LINK = '''[ ](https://ru.wikipedia.org/wiki/Hunt_the_Wumpus)Мир «Hunt the Wumpus» — это пещера из 20 
+пронумерованных комнат, каждая из которых соединена тоннелями с тремя другими, т. е. пещера представляет собой 
+расплющенный додекаэдр (в последующих версиях используются топологии, основанные на икосаэдре, листе Мёбиуса, 
+пчелиных сотах и др.)[2]. В начале игры персонаж случайным образом оказывается в одной из комнат пещеры. За ход он 
+может либо выстрелить в одну из трёх соседних комнат, либо перейти в какую-нибудь из них. '''
 
 ''' ОБРАБОТЧИК КОМАНДЫ СТАРТ '''
 
@@ -107,7 +113,7 @@ async def start_restart_fix_cmd_handler(message: types.Message, state):
 @dp.message_handler()
 async def main_keyboard(message: types.Message, state):
     try:
-        if message.text not in ['Начать игру 🏰', 'GitHub проекта 🏠', 'Помощь❓', 'Wiki📃', 'Поделиться', '1', '2',
+        if message.text not in ['Начать игру 🏰', 'GitHub проекта 🏠', 'Помощь❓', 'Wiki📃', 'Контакты', '1', '2',
                                 '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18',
                                 '19', '20']:
             await bot.send_message(message.from_user.id,
@@ -184,14 +190,14 @@ async def main_keyboard(message: types.Message, state):
                 await bot.send_message(message.from_user.id, session.get_message_for_player_choices(),
                                        reply_markup=keyboard_markup, parse_mode='Markdown')
 
-        if message.text == 'GitHub проекта🏠':
-            pass
+        if message.text == 'GitHub проекта 🏠':
+            await bot.send_message(message.from_user.id, GIT_HUB_LINK, reply_markup=MainKeyboard(), parse_mode='Markdown')
+            state.finish()
         if message.text == 'Wiki📃':
-            print('WIKI-----------------------------')
             await bot.send_message(message.from_user.id, WIKI_LINK, reply_markup=MainKeyboard(), parse_mode='Markdown')
             state.finish()
 
-        if message.text == 'Поделиться':
+        if message.text == 'Контакты':
             pass
         if message.text == 'Помощь❓':
             await bot.send_message(message.from_user.id, HELP_TEXT, reply_markup=MainKeyboard())
@@ -448,9 +454,9 @@ async def play_gold(query: types.CallbackQuery):
 
         # встроенная клавиатура
         keyboard_markup = types.InlineKeyboardMarkup()
-        player_choices = list(range(1, 6))
+        player_choices = list(range(1, 4))
 
-        TAKE_GOLD = 'УГАДАЙ ЧИСЛО ОТ ОДНОГО ДО 5-ти'
+        TAKE_GOLD = 'УГАДАЙ ЧИСЛО ОТ 1 ДО 3'
 
         # вырианты выбора комнат в которые можно выстрелить
         for player_choice in player_choices:
@@ -479,7 +485,7 @@ async def take_gold(query: types.CallbackQuery):
         # встроенная клавиатура
         keyboard_markup = types.InlineKeyboardMarkup()
 
-        choices = list(range(1, 6))
+        choices = list(range(1, 4))
 
         win_choice = random.choice(choices)
 
@@ -494,13 +500,14 @@ async def take_gold(query: types.CallbackQuery):
                     types.InlineKeyboardButton(str(player_choice), callback_data=f'next_room{player_choice}'))
             await bot.send_message(chat_id=query.from_user.id, text='Вы победили и получаете 500 золота. Куда дальше?',
                                    reply_markup=keyboard_markup, parse_mode='Markdown')
+
         else:
             for player_choice in player_choices:
                 keyboard_markup.add(
                     types.InlineKeyboardButton(str(player_choice), callback_data=f'next_room{player_choice}'))
 
-            await bot.send_message(query.from_user.id, text='Вы проиграли. Куда дальше?',
-                                   reply_markup=keyboard_markup, parse_mode='Markdown')
+            await bot.send_message(query.from_user.id, text='ВЫ ПРОИГРАЛИ',
+                                   reply_markup=FinishKeyboard(), parse_mode='Markdown')
 
 
     except Exception as ex:
@@ -516,7 +523,7 @@ async def take_gold(query: types.CallbackQuery):
 @dp.callback_query_handler(lambda cb: cb.data in ['open_up'])
 async def open_up(query: types.CallbackQuery):
     try:
-        print('ИГРА НА ЗОЛОТО')
+        print('ОБРАБОТЧИК КНОПКИ ВСКРЫТЬ open_up')
         # получаю выбор пользователя и сессию
         player_choice_number, session = await get_session_and_player_choice_number(query)
 
@@ -549,7 +556,7 @@ async def open_up(query: types.CallbackQuery):
 @dp.callback_query_handler(lambda cb: cb.data in ['open_up1', 'open_up2', 'open_up3'])
 async def open_up_number(query: types.CallbackQuery):
     try:
-        print('ИГРА НА ЗОЛОТО ВЫБИРАЮ ЧИСЛО open_up')
+        print(' ОБРАБОТЧИК КНОПКИ ВЫБИРА ЧИСЛА (ВСКРЫТЬ) ')
         # получаю выбор пользователя
         player_choice_number, session = await get_session_and_player_choice_number(query)
 
