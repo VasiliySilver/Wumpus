@@ -1,6 +1,6 @@
 import random
 
-from console.create_cave import create_cave
+from create_cave import create_cave
 
 
 def get_action_rooms():

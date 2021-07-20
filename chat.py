@@ -4,10 +4,13 @@ import random
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import motor.motor_asyncio
-import traceback
 
 from bot import config
 from bot.session import Session
+
+import traceback
+
+print(config.TOKEN)
 
 """ Инициализирую работу с базой """
 
@@ -77,6 +80,11 @@ WIKI_LINK = '''[ ](https://ru.wikipedia.org/wiki/Hunt_the_Wumpus)Мир «Hunt t
 может либо выстрелить в одну из трёх соседних комнат, либо перейти в какую-нибудь из них. '''
 
 ''' ОБРАБОТЧИК КОМАНДЫ СТАРТ '''
+
+CONTACTS = '''Phone: +7 (915) 407-93-74
+Email: s555133@mail.ru
+website: ogo-proger.ru
+'''
 
 
 @dp.message_handler(commands='start')
@@ -193,14 +201,18 @@ async def main_keyboard(message: types.Message, state):
         if message.text == 'GitHub проекта 🏠':
             await bot.send_message(message.from_user.id, GIT_HUB_LINK, reply_markup=MainKeyboard(), parse_mode='Markdown')
             state.finish()
+
         if message.text == 'Wiki📃':
             await bot.send_message(message.from_user.id, WIKI_LINK, reply_markup=MainKeyboard(), parse_mode='Markdown')
             state.finish()
 
         if message.text == 'Контакты':
-            pass
+            await bot.send_message(message.from_user.id, CONTACTS, reply_markup=MainKeyboard(), parse_mode='Markdown')
+            state.finish()
+
         if message.text == 'Помощь❓':
             await bot.send_message(message.from_user.id, HELP_TEXT, reply_markup=MainKeyboard())
+
     except Exception as ex:
         print(ex)
         print(traceback.format_exc())
