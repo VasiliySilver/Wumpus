@@ -1,2 +1,3 @@
 venv
 bot/.env
+/config/local.env
