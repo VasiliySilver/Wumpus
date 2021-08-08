@@ -92,7 +92,8 @@ WIKI_LINK = '''[ ](https://ru.wikipedia.org/wiki/Hunt_the_Wumpus)Мир «Hunt t
 
 CONTACTS = '''Phone: +7 (915) 407-93-74
 Email: s555133@mail.ru
-website: ogo-proger.ru
+website: www.ogo-english.ru
+website: www.ogo-proger.ru
 '''
 
 
