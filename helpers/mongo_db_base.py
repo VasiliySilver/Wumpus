@@ -9,7 +9,7 @@ import datetime
 
 from pymongo import MongoClient
 
-cluster = 'mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false'
+cluster = 'mongodb://mongo:27017/'
 
 client = MongoClient(cluster)
 

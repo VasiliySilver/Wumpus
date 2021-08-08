@@ -3,29 +3,40 @@ import random
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-import motor.motor_asyncio
 
-from bot import config
+from bot import token
 from bot.session import Session
 
 import traceback
 
-print(config.TOKEN)
+from bot.token import get_token
+from db.connecttomongo import get_client
+from db.moto_methods import do_insert_one
+
+print(token.TOKEN)
 
 """ Инициализирую работу с базой """
 
-# """ Ключ для работы с базой """
-cluster = config.CLUSTER
-client = motor.motor_asyncio.AsyncIOMotorClient(cluster)
+client = get_client()
 
 """ База с которой работаю """
 
-db = client["test"]
+db = client.get_database("wumpus_db")
 
 """ Таблица с которой работаю """
-wumpus = db.wumpus
 
-bot = Bot(token=config.TOKEN)
+wumpus = db.get_collection("wumpus")
+
+''' Проверка что есть коллекция wumpus '''
+
+r = do_insert_one(wumpus, {'check': 'check'})
+
+print('URL для проверки bd - wumpus_db, collection - wumpus, data - {"check": "check"}')
+print('http://localhost:9001')
+
+token = get_token()
+
+bot = Bot(token=token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 """ ГЛАВНАЯ КЛАВИАТУРА (НИЗ)"""
@@ -89,6 +100,10 @@ website: ogo-proger.ru
 
 @dp.message_handler(commands='start')
 async def start_cmd_handler(message: types.Message, state):
+    await try_get_user(message, state)
+
+
+async def try_get_user(message, state):
     try:
         user = await db.wumpus.find_one({'tgid': {'$eq': message.from_user.id}})
         if user is None:
@@ -129,21 +144,20 @@ async def main_keyboard(message: types.Message, state):
                                    reply_markup=MainKeyboard())
 
         if message.text == 'Начать игру 🏰':
+            # получаю пользователя
+            await try_get_user(message, state)
             # начинаю сессию
             session = Session(message.from_user.id)
             json_data_session = session.to_json()
             await db.wumpus.update_one({"tgid": message.from_user.id}, {"$set": {"session": json_data_session}})
 
-            from pprint import pprint
-            pprint(session.cave.dict_rooms)
-
             print(session.wumpus.location, 'WUMPUS LOCATION')
             print(session.player.location, 'PLAYER LOACTION')
 
             # получаю локации мышей, золота и ловушек
-            bats_locations = [i.location for i in session.bats]
-            golds_locations = [i.location for i in session.golds]
-            traps_locations = [i.location for i in session.traps]
+            # bats_locations = [i.location for i in session.bats]
+            # golds_locations = [i.location for i in session.golds]
+            # traps_locations = [i.location for i in session.traps]
 
             # получаю list(list,list..)
             bats_room_connects = sum([i.room_connects for i in session.golds], [])
@@ -154,10 +168,6 @@ async def main_keyboard(message: types.Message, state):
             bats_room_connects_int = [int(i) for i in bats_room_connects]
             golds_room_connects_int = [int(i) for i in golds_room_connects]
             traps_room_connects_int = [int(i) for i in traps_room_connects]
-
-            print(golds_locations, 'golds')
-            print(bats_locations, 'bats')
-            print(traps_locations, 'traps')
 
             # в комнате рядом есть золото или мыши или ловушка
             player_in_gold_room_connects = int(session.player.location) in bats_room_connects_int
@@ -199,7 +209,8 @@ async def main_keyboard(message: types.Message, state):
                                        reply_markup=keyboard_markup, parse_mode='Markdown')
 
         if message.text == 'GitHub проекта 🏠':
-            await bot.send_message(message.from_user.id, GIT_HUB_LINK, reply_markup=MainKeyboard(), parse_mode='Markdown')
+            await bot.send_message(message.from_user.id, GIT_HUB_LINK, reply_markup=MainKeyboard(),
+                                   parse_mode='Markdown')
             state.finish()
 
         if message.text == 'Wiki📃':
@@ -214,8 +225,7 @@ async def main_keyboard(message: types.Message, state):
             await bot.send_message(message.from_user.id, HELP_TEXT, reply_markup=MainKeyboard())
 
     except Exception as ex:
-        print(ex)
-        print(traceback.format_exc())
+        print(traceback.format_exc(ex))
         await bot.send_message(message.from_user.id, 'Что-то пошло не так, 🤷🏼‍♀️ возврат в главное меню.',
                                reply_markup=MainKeyboard())
 
@@ -235,7 +245,7 @@ async def next_room(query: types.CallbackQuery):
         player_choice_number, session = await get_session_and_player_choice_number(query)
 
         from pprint import pprint
-        pprint(session.cave.dict_rooms)
+        # pprint(session.cave.dict_rooms)
 
         print(player_choice_number, 'palyer_choice_number')
 
