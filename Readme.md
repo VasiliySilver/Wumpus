@@ -53,7 +53,7 @@
 
 1. Добавить файл .env в папку bot
 
-![img_3.png](img/img_3.png)
+![img.png](img/img.png)
 
 2. Заходим в телеграмм ищем BotFather
 3. Создаем бота и получаем Token
@@ -65,7 +65,7 @@
 
 1. Добавить файл .env в папку bot
 
-![img_3.png](img/img_3.png)
+![img.png](img/img.png)
 
 2. Заходим в телеграмм ищем BotFather
 3. Создаем бота и получаем Token
