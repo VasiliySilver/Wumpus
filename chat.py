@@ -13,8 +13,6 @@ from bot.token import get_token
 from db.connecttomongo import get_client
 from db.moto_methods import do_insert_one
 
-print(token.TOKEN)
-
 """ Инициализирую работу с базой """
 
 client = get_client()
@@ -34,9 +32,9 @@ r = do_insert_one(wumpus, {'check': 'check'})
 print('URL для проверки bd - wumpus_db, collection - wumpus, data - {"check": "check"}')
 print('http://localhost:9001')
 
-token = get_token()
+TOKEN = get_token()
 
-bot = Bot(token=token)
+bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 """ ГЛАВНАЯ КЛАВИАТУРА (НИЗ)"""
