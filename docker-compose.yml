@@ -30,8 +30,6 @@ services:
     command: python -u chat.py
     ports:
       - 5000:5000
-    env_file:
-      - bot/.env
     depends_on:
       - mongo
     links:
